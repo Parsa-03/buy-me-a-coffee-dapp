@@ -7,7 +7,7 @@ import styles from '../styles/Home.module.css'
 
 export default function Home() {
   // Contract Address & ABI
-  const contractAddress = process.env['contractAddress']
+  const contractAddress = "0xBf815Cf7a1237530A8274A4839Ea9A5d6630EA2d"
   const contractABI = abi.abi;
 
   // Component state
@@ -29,7 +29,7 @@ export default function Home() {
     try {
       const { ethereum } = window;
 
-      const accounts = await ethereum.request({method: 'eth_accounts'})
+      const accounts = await ethereum.request({ method: 'eth_accounts' })
       console.log("accounts: ", accounts);
 
       if (accounts.length > 0) {
@@ -45,25 +45,73 @@ export default function Home() {
 
   const connectWallet = async () => {
     try {
-      const {ethereum} = window;
+      const { ethereum } = window;
 
       if (!ethereum) {
-        console.log("please install MetaMask");
+        console.log("Please install MetaMask");
+      } 
+      else {
+        // Check if the wallet is connected
+        if (!ethereum.isConnected()) {
+          console.log("Please connect your wallet");
+        } else {
+          // Check if the wallet is on the Goerli testnet
+          if (ethereum.chainId !== "0x5") {
+            try {
+              // Try to switch to Goerli testnet
+              await ethereum.request({
+                method: "wallet_switchEthereumChain",
+                params: [{ chainId: "0x5" }], // Goerli testnet chainId
+              });
+            } catch (error) {
+              // If the user cancels the network change, exit the function
+              if (error.message.includes("User rejected request")) {
+                console.log("Network change cancelled by user");
+                return;
+              }
+              // If the wallet is not on the Goerli testnet and cannot switch, ask the user to add it
+              if (error.code === 4902) {
+                try {
+                  // Try to add Goerli testnet
+                  await ethereum.request({
+                    method: "wallet_addEthereumChain",
+                    params: [
+                      {
+                        chainId: "0x5",
+                        chainName: "Goerli",
+                        rpcUrls: ["https://rpc.ankr.com/eth_goerli"],
+                        nativeCurrency: {
+                          name: "ETH",
+                          symbol: "ETH",
+                          decimals: 18,
+                        },
+                        blockExplorerUrls: ["https://goerli.etherscan.io"],
+                      },
+                    ],
+                  });
+                } catch (addError) {
+                  console.log("Failed to add Goerli testnet", addError);
+                }
+              }
+              console.log(`96.error: ${error.message}`);
+            }
+          }
+          const accounts = await ethereum.request({
+            method: "eth_requestAccounts",
+          });
+
+          setCurrentAccount(accounts[0]);
+        }
       }
-
-      const accounts = await ethereum.request({
-        method: 'eth_requestAccounts'
-      });
-
-      setCurrentAccount(accounts[0]);
     } catch (error) {
-      console.log(error);
+      console.log(`107.error: ${error.message}`);
     }
-  }
+  };
+
 
   const buyCoffee = async () => {
     try {
-      const {ethereum} = window;
+      const { ethereum } = window;
 
       if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum, "any");
@@ -78,7 +126,7 @@ export default function Home() {
         const coffeeTxn = await buyMeACoffee.buyCoffee(
           name ? name : "anon",
           message ? message : "Enjoy your coffee!",
-          {value: ethers.utils.parseEther("0.001")}
+          { value: ethers.utils.parseEther("0.001") }
         );
 
         await coffeeTxn.wait();
@@ -108,7 +156,7 @@ export default function Home() {
           contractABI,
           signer
         );
-        
+
         console.log("fetching memos from the blockchain..");
         const memos = await buyMeACoffee.getMemos();
         console.log("fetched!");
@@ -116,12 +164,12 @@ export default function Home() {
       } else {
         console.log("Metamask is not connected");
       }
-      
+
     } catch (error) {
       console.log(error);
     }
   };
-  
+
   useEffect(() => {
     let buyMeACoffee;
     isWalletConnected();
@@ -142,7 +190,7 @@ export default function Home() {
       ]);
     };
 
-    const {ethereum} = window;
+    const { ethereum } = window;
 
     // Listen for new memo events.
     if (ethereum) {
@@ -163,7 +211,7 @@ export default function Home() {
       }
     }
   }, []);
-  
+
   return (
     <div className={styles.container}>
       <Head>
@@ -176,7 +224,7 @@ export default function Home() {
         <h1 className={styles.title}>
           Buy Amin a Coffee!
         </h1>
-        
+
         {currentAccount ? (
           <div>
             <form>
@@ -184,21 +232,21 @@ export default function Home() {
                 <label>
                   Name
                 </label>
-                <br/>
-                
+                <br />
+
                 <input
                   id="name"
                   type="text"
                   placeholder="anon"
                   onChange={onNameChange}
-                  />
+                />
               </div>
-              <br/>
+              <br />
               <div>
                 <label>
                   Send Amin a message
                 </label>
-                <br/>
+                <br />
 
                 <textarea
                   rows={3}
@@ -228,8 +276,8 @@ export default function Home() {
 
       {currentAccount && (memos.map((memo, idx) => {
         return (
-          <div key={idx} style={{border:"2px solid", "borderRadius":"5px", padding: "5px", margin: "5px"}}>
-            <p style={{"fontWeight":"bold"}}>"{memo.message}"</p>
+          <div key={idx} style={{ border: "2px solid", "borderRadius": "5px", padding: "5px", margin: "5px" }}>
+            <p style={{ "fontWeight": "bold" }}>{memo.message}</p>
             <p>From: {memo.name} at {memo.timestamp.toString()}</p>
           </div>
         )
@@ -241,9 +289,9 @@ export default function Home() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Created by @thatguyintech for Alchemy's Road to Web3 lesson two!
-        </a>
+          Created by @thatguyintech for Alchemy&apos;s Road to Web3 lesson two!        </a>
       </footer>
     </div>
   )
+
 }
