@@ -215,14 +215,14 @@ export default function Home() {
   return (
     <div className={styles.container}>
       <Head>
-        <title>Buy Amin a Coffee!</title>
+        <title>Buy APA a Coffee!</title>
         <meta name="description" content="Tipping site" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <main className={styles.main}>
         <h1 className={styles.title}>
-          Buy Amin a Coffee!
+          Buy APA a Coffee!
         </h1>
 
         {currentAccount ? (
@@ -244,7 +244,7 @@ export default function Home() {
               <br />
               <div>
                 <label>
-                  Send Amin a message
+                  Send APA a message
                 </label>
                 <br />
 
