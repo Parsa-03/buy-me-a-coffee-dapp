@@ -290,11 +290,11 @@ export default function Home() {
       </div>
       <footer className={styles.footer}>
         <a
-          href="https://alchemy.com/?a=roadtoweb3weektwo"
+          href="https://apaberg.ir"
           target="_blank"
           rel="noopener noreferrer"
         >
-          Created by @thatguyintech for Alchemy&apos;s Road to Web3 lesson two!{" "}
+          Designed by APAberg Company. Pay us a visit by clicking here.{" "}
         </a>
       </footer>
     </div>
