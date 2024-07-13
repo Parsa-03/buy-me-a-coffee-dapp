@@ -1,40 +1,93 @@
 .container {
-  min-height: 100vh;
-  padding: 0 0.5rem;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
+  min-height: 100vh;
+  width: 100%;
 }
-
-.main {
-  padding: 5rem 0;
+.content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
 }
-
+.main {
+  width: 20rem;
+  margin: 5rem 0;
+  box-shadow: -0.15rem 0.2rem 0.7rem 0 var(--box-shadow);
+  border-radius: 0.6rem;
+  background-color: var(--background-main);
+}
 .footer {
+  background-color: var(--background-footer);
+  padding: 1rem;
   width: 100%;
-  height: 100px;
-  border-top: 1px solid #eaeaea;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
 .footer a {
   display: flex;
   justify-content: center;
   align-items: center;
-  flex-grow: 1;
+  height: 100%;
+  color: var(--color);
 }
-
+.btn {
+  margin: 1rem 0;
+  width: 100%;
+  border: none;
+  padding: 0.7rem;
+  border-radius: 0.3rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--btn-color);
+  background-color: var(--color);
+}
+.btn:hover {
+  cursor: pointer;
+}
+.btn_send {
+  margin: 2.4rem 0 1.2rem;
+}
+.div_btn {
+  margin: auto;
+  width: 75%;
+}
+.div_input {
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+  width: 75%;
+  margin-bottom: 1.2rem;
+}
+.label {
+  color: var(--form-color);
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+.input {
+  padding: 0.5rem;
+  border: 0.15rem solid var(--form-color);
+  border-radius: 0.3rem;
+  height: 2.6rem;
+  font-size: 1rem;
+  background-color: var(--form-color);
+  color: var(--input-color);
+  outline: none;
+}
+.textarea {
+  line-height: 1.2;
+  resize: none;
+  font-family: sans-serif;
+  word-wrap: break-word;
+}
+.input:focus {
+  border: 0.15rem solid var(--input-focus-border);
+}
 .title a {
   color: #0070f3;
   text-decoration: none;
+  margin-bottom: 0.6rem;
 }
 
 .title a:hover,
@@ -42,13 +95,25 @@
 .title a:active {
   text-decoration: underline;
 }
-
+.memos {
+  top: -12.3rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  position: relative;
+  color: var(--form-color);
+}
 .title {
   margin: 0;
   line-height: 1.15;
-  font-size: 4rem;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color);
+  margin: 1.2rem;
 }
-
+.title:hover,
+.memos:hover{
+cursor: default;
+}
 .title,
 .description {
   text-align: center;
@@ -60,7 +125,7 @@
 }
 
 .code {
-  background: #fafafa;
+  background: var(--color);
   border-radius: 5px;
   padding: 0.75rem;
   font-size: 1.1rem;
