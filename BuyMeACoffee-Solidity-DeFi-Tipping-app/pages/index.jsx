@@ -7,7 +7,7 @@ import styles from "../styles/Home.module.css";
 
 export default function Home() {
   // Contract Address & ABI
-  const contractAddress = "0xBf815Cf7a1237530A8274A4839Ea9A5d6630EA2d";
+  const contractAddress = "0xb7024ba115aa7e107877b5c397a417dd931e6e68";
   const contractABI = abi.abi;
 
   // Component state
@@ -28,89 +28,45 @@ export default function Home() {
   const isWalletConnected = async () => {
     try {
       const { ethereum } = window;
+      if (!ethereum) {
+        console.log("Make sure you have MetaMask!");
+        return;
+      }
 
       const accounts = await ethereum.request({ method: "eth_accounts" });
-      console.log("accounts: ", accounts);
-
       if (accounts.length > 0) {
         const account = accounts[0];
-        console.log("wallet is connected! " + account);
+        console.log("Wallet is connected: " + account);
+        setCurrentAccount(account);
       } else {
-        console.log("make sure MetaMask is connected");
+        console.log("Make sure MetaMask is connected");
       }
     } catch (error) {
-      console.log("error: ", error);
+      console.log("Error checking wallet connection: ", error);
     }
   };
 
   const connectWallet = async () => {
     try {
       const { ethereum } = window;
-
       if (!ethereum) {
         console.log("Please install MetaMask");
-      } else {
-        // Check if the wallet is connected
-        if (!ethereum.isConnected()) {
-          console.log("Please connect your wallet");
-        } else {
-          // Check if the wallet is on the Goerli testnet
-          if (ethereum.chainId !== "0x5") {
-            try {
-              // Try to switch to Goerli testnet
-              await ethereum.request({
-                method: "wallet_switchEthereumChain",
-                params: [{ chainId: "0x5" }], // Goerli testnet chainId
-              });
-            } catch (error) {
-              // If the user cancels the network change, exit the function
-              if (error.message.includes("User rejected request")) {
-                console.log("Network change cancelled by user");
-                return;
-              }
-              // If the wallet is not on the Goerli testnet and cannot switch, ask the user to add it
-              if (error.code === 4902) {
-                try {
-                  // Try to add Goerli testnet
-                  await ethereum.request({
-                    method: "wallet_addEthereumChain",
-                    params: [
-                      {
-                        chainId: "0x5",
-                        chainName: "Goerli",
-                        rpcUrls: ["https://rpc.ankr.com/eth_goerli"],
-                        nativeCurrency: {
-                          name: "ETH",
-                          symbol: "ETH",
-                          decimals: 18,
-                        },
-                        blockExplorerUrls: ["https://goerli.etherscan.io"],
-                      },
-                    ],
-                  });
-                } catch (addError) {
-                  console.log("Failed to add Goerli testnet", addError);
-                }
-              }
-              console.log(`96.error: ${error.message}`);
-            }
-          }
-          const accounts = await ethereum.request({
-            method: "eth_requestAccounts",
-          });
-
-          setCurrentAccount(accounts[0]);
-        }
+        return;
       }
+
+      const accounts = await ethereum.request({
+        method: "eth_requestAccounts",
+      });
+      console.log("Connected to account: " + accounts[0]);
+      setCurrentAccount(accounts[0]);
     } catch (error) {
-      console.log(`107.error: ${error.message}`);
+      console.log("Error connecting to wallet: ", error);
     }
   };
 
   const buyCoffee = async () => {
     try {
       const { ethereum } = window;
-
       if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum, "any");
         const signer = provider.getSigner();
@@ -128,12 +84,9 @@ export default function Home() {
         );
 
         await coffeeTxn.wait();
-
         console.log("mined ", coffeeTxn.hash);
-
         console.log("coffee purchased!");
 
-        // Clear the form fields.
         setName("");
         setMessage("");
       }
@@ -148,52 +101,72 @@ export default function Home() {
       const { ethereum } = window;
       if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
         const buyMeACoffee = new ethers.Contract(
           contractAddress,
           contractABI,
-          signer
+          provider
         );
 
-        console.log("fetching memos from the blockchain..");
-        const memos = await buyMeACoffee.getMemos();
-        console.log("fetched!");
-        setMemos(memos);
+        console.log("Fetching memos from the blockchain...");
+        const fetchedMemos = await buyMeACoffee.getMemos();
+        console.log("Fetched memos: ", fetchedMemos);
+
+        const formattedMemos = fetchedMemos.map((memo) => ({
+          from: memo.from,
+          timestamp: memo.timestamp.toNumber(),
+          name: memo.name,
+          message: memo.message,
+        }));
+
+        setMemos((prevMemos) => {
+          const allMemos = [...prevMemos, ...formattedMemos];
+          const uniqueMemos = allMemos.reduce((acc, current) => {
+            const isDuplicate = acc.some(
+              (memo) =>
+                memo.timestamp === current.timestamp && memo.from === current.from
+            );
+            if (!isDuplicate) {
+              acc.push(current);
+            }
+            return acc;
+          }, []);
+          return uniqueMemos;
+        });
       } else {
-        console.log("Metamask is not connected");
+        console.log("MetaMask is not connected");
       }
     } catch (error) {
-      console.log(error);
+      console.log("Error fetching memos: ", error);
     }
   };
 
   useEffect(() => {
-    let buyMeACoffee;
-    isWalletConnected();
-    getMemos();
+    const init = async () => {
+      await isWalletConnected();
+      if (currentAccount) {
+        await getMemos();
+      }
+    };
+    init();
 
-    // Create an event handler function for when someone sends
-    // us a new memo.
     const onNewMemo = (from, timestamp, name, message) => {
-      console.log("Memo received: ", from, timestamp, name, message);
+      console.log("New memo received: ", from, timestamp, name, message);
       setMemos((prevState) => [
         ...prevState,
         {
-          address: from,
-          timestamp: new Date(timestamp * 1000),
-          message,
+          from,
+          timestamp: new Date(timestamp * 1000).toLocaleString(),
           name,
+          message,
         },
       ]);
     };
 
     const { ethereum } = window;
-
-    // Listen for new memo events.
     if (ethereum) {
       const provider = new ethers.providers.Web3Provider(ethereum, "any");
       const signer = provider.getSigner();
-      buyMeACoffee = new ethers.Contract(contractAddress, contractABI, signer);
+      const buyMeACoffee = new ethers.Contract(contractAddress, contractABI, signer);
 
       buyMeACoffee.on("NewMemo", onNewMemo);
     }
@@ -203,7 +176,7 @@ export default function Home() {
         buyMeACoffee.off("NewMemo", onNewMemo);
       }
     };
-  }, []);
+  }, [currentAccount]);
 
   return (
     <div className={styles.container}>
@@ -221,7 +194,6 @@ export default function Home() {
               <form>
                 <div className={styles.div_input}>
                   <label className={styles.label}>Name</label>
-
                   <input
                     id="name"
                     autoFocus
@@ -231,10 +203,8 @@ export default function Home() {
                     onChange={onNameChange}
                   />
                 </div>
-
                 <div className={styles.div_input}>
                   <label className={styles.label}>Send APA a message</label>
-
                   <textarea
                     rows={4}
                     cols={50}
@@ -259,8 +229,7 @@ export default function Home() {
           ) : (
             <div className={styles.div_btn}>
               <button onClick={connectWallet} className={styles.btn}>
-                {" "}
-                Connect your wallet{" "}
+                Connect your wallet
               </button>
             </div>
           )}
@@ -282,7 +251,7 @@ export default function Home() {
               >
                 <p style={{ fontWeight: "bold" }}>{memo.message}</p>
                 <p>
-                  From: {memo.name} at {memo.timestamp.toString()}
+                  From: {memo.name} at {memo.timestamp}
                 </p>
               </div>
             );
@@ -294,7 +263,7 @@ export default function Home() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Designed by APAberg Company. Pay us a visit by clicking here.{" "}
+          Designed by APAberg Company. Pay us a visit by clicking here.
         </a>
       </footer>
     </div>
