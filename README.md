@@ -8,7 +8,9 @@ In order to test it, go through these steps on your own code editor:
 
 3- Then this: "git clone https://github.com/Parsa-03/buy-me-a-coffee-dapp.git"
 
-4- Finally, you can use "cd buy-me-a-coffee-dapp\BuyMeACoffee-Solidity-DeFi-Tipping-app" to go to its directory and use "npm run dev" command to compile the front and interact with it in your browser (would be viewable at usually http://localhost:3000)
+4- After cloning the repository succussfully, you can use "cd buy-me-a-coffee-dapp\BuyMeACoffee-Solidity-DeFi-Tipping-app" to go to its directory and in the terminal, use "npm install" or "yarn install" to install all required dependencies.
+
+5- Finally, use "npm run dev" or "yarn run dev" command to compile the front and interact with it in your browser (would be viewable at usually http://localhost:3000)
 
 If there's anything you need help with, contact me on telegram: @parsar2025
 Take care!
